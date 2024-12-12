@@ -48,3 +48,43 @@ class LargeModelLoader:
     def get_available_models(self):
         """Returns list of available models."""
         return list(self.available_models.keys())
+    
+    def extract_activation(self, model, input_ids, attention_mask=None):
+        """
+        Extract and combine hidden states from the last encoder layer and first decoder layer
+        by mean pooling over tokens and residual sum each other.
+
+        Args:
+            model: HuggingFace model
+            input_ids: Input token IDs (batch_size, seq_len)
+            attention_mask: Attention mask (batch_size, seq_len)
+
+        Returns:
+            torch.Tensor: Combined hidden states (batch_size, hidden_dim)
+        """
+        # Get hidden states from model output
+        outputs = model(input_ids, 
+                        attention_mask=attention_mask,
+                        output_hidden_states=True)
+        
+        hidden_states = outputs.hidden_states
+
+        # Last encoder layer (-1)
+        encoder_last = hidden_states[-1]
+        # First decoder layer (0)
+        decoder_first = hidden_states[0]
+
+        # Mean pooling excluding masked tokens
+        if attention_mask is not None:
+            mask = attention_mask.unsqueeze(-1)
+            encoder_pooled = (encoder_last * mask).sum(1) / mask.sum(1)
+            decoder_pooled = (decoder_first * mask).sum(1) / mask.sum(1)
+        else:
+            encoder_pooled = encoder_last.mean(dim=1)
+            decoder_pooled = decoder_first.mean(dim=1)
+
+        # Combine tensors by addition
+        combined = encoder_pooled + decoder_pooled
+        
+        return combined
+
