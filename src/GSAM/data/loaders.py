@@ -11,8 +11,8 @@ def load_word_dataset():
     print(f"Loaded dataset with {len(dataset)} samples.")
     
     # Print the first 5 samples of the dataset.
-    for i in range(5):
-        print(f"Sample {i + 1}: {dataset[i]['sentence']}")  # Assuming the 'sentence' field contains the sentence.
+    #for i in range(5):
+       # print(f"Sample {i + 1}: {dataset[i]['sentence']}")  # Assuming the 'sentence' field contains the sentence.
     
     return dataset
 
