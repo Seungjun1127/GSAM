@@ -22,8 +22,11 @@ def test_gsam_pipeline():
     # 모델 로드
     model_loader = LargeModelLoader()
     model_name = 'llama2-7b'  # Llama-2-7 모델 이름으로 변경
-    model, tokenizer = model_loader.load_model(model_name, device='cpu')  # device를 'cpu'로 설정
-    
+
+    # CUDA 사용 가능 여부 확인
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    model, tokenizer = model_loader.load_model(model_name, device=device)  # device를 설정
+
     # 패딩 토큰 설정
     tokenizer.pad_token = tokenizer.eos_token  # EOS 토큰을 패딩 토큰으로 설정
 
@@ -33,10 +36,10 @@ def test_gsam_pipeline():
 
     # 모델의 activations 추출
     with torch.no_grad():
-        activations = model_loader.extract_activation(model, inputs['input_ids'], inputs['attention_mask'])
+        activations = model_loader.extract_activation(model, inputs['input_ids'].to(device), inputs['attention_mask'].to(device))
 
     # GSAM 계산
-    gsam_score = compute_gsam(activations.numpy())
+    gsam_score = compute_gsam(activations.cpu().numpy())  # CPU로 이동하여 NumPy 배열로 변환
     print(f"GSAM Score: {gsam_score}")
 
 if __name__ == "__main__":
