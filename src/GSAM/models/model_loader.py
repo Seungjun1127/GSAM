@@ -33,7 +33,7 @@ class LargeModelLoader:
         
         print(f"Loading {model_name} model to {device}...")
         
-        # Load model without 8-bit quantization for CPU
+        # Load model with appropriate device mapping
         model = AutoModelForCausalLM.from_pretrained(
             model_path,
             torch_dtype=torch.float16,
