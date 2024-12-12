@@ -3,6 +3,14 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Ignore LaTeX auxiliary files
+*.aux
+*.log
+*.fdb_latexmk
+*.fls
+*.out
+*.synctex.gz
+
 # C extensions
 *.so
 
