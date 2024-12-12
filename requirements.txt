@@ -2,3 +2,6 @@ datasets
 numpy
 scipy
 typing
+torch
+accelerate
+bitsandbytes

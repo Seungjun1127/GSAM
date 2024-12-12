@@ -4,14 +4,17 @@ import torch
 class LargeModelLoader:
     def __init__(self):
         self.available_models = {
-            'llama2-7b': 'meta-llama/Llama-2-7b',
+            'gpt-neo-125M': 'EleutherAI/gpt-neo-125M',
+            'gpt-neo-1.3B': 'EleutherAI/gpt-neo-1.3B',
+            'gpt-neo-2.7B': 'EleutherAI/gpt-neo-2.7B',
+            'llama2-7b': 'meta-llama/Llama-2-7b-hf',
             'llama2-13b': 'meta-llama/Llama-2-13b',
             'falcon-7b': 'tiiuae/falcon-7b',
             'mpt-7b': 'mosaicml/mpt-7b',
             'pythia-7b': 'EleutherAI/pythia-6.9b'
         }
         
-    def load_model(self, model_name: str, device: str = 'cuda'):
+    def load_model(self, model_name: str, device: str = 'cpu'):
         """
         Load a pretrained large language model from HuggingFace.
         
@@ -30,12 +33,11 @@ class LargeModelLoader:
         
         print(f"Loading {model_name} model to {device}...")
         
-        # Load model memory efficiently using 8-bit quantization
+        # Load model without 8-bit quantization for CPU
         model = AutoModelForCausalLM.from_pretrained(
             model_path,
             torch_dtype=torch.float16,
-            load_in_8bit=True,
-            device_map="auto",
+            device_map="auto" if device == 'cuda' else None,
             trust_remote_code=True
         )
         
