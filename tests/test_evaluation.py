@@ -25,22 +25,10 @@ def test_gsam_pipeline():
     print(f"Type of first sample: {type(dataset[0])}")
     print(f"First sample: {dataset[0]}")
 
-    # Extract the first 10 samples
-    samples = dataset[:10]
-
-    # Check if each sample is a dictionary and count the total number of data points in the 'sentence' field
-    total_data_points = 0
-    for sample in samples:
-        if isinstance(sample, dict) and 'sentence' in sample:
-            total_data_points += len(sample['sentence'])
-        else:
-            print("Sample is not a dictionary or does not contain 'sentence':", sample)
-
-    print(f"Total data points in the 'sentence' field for the first 10 samples: {total_data_points}")
 
     # Load model
     model_loader = LargeModelLoader()
-    model_name = 'pythia-7b'  # Changed model name to Llama-2-7
+    model_name = 'gpt-neo-125M'  # Changed model name to Llama-2-7
 
     # Check if CUDA is available
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -59,7 +47,7 @@ def test_gsam_pipeline():
 
     # Calculate GSAM
     #metric = 'kl_divergence'  # Define metric variable
-    metric = 'neg_log_likelihood'
+    metric = 'chi_squared'
     gsam_score = compute_gsam(activations.cpu().numpy(), metric=metric)  # Move to CPU and convert to NumPy array
     print(f"GSAM Score: {gsam_score}")
 

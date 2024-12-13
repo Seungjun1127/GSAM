@@ -128,8 +128,10 @@ def compute_kl_divergence(embeddings: np.ndarray, mu: np.ndarray, sigma: np.ndar
 
 
 def chi_squared_goodness_of_fit(embeddings: np.ndarray, mu: np.ndarray, sigma: np.ndarray, bins: int = 30, max_chi_squared: float = 100.0) -> float:
-    # Z-score normalization
-    normalized_embeddings = (embeddings - mu) / sigma
+    """Calculate the Chi-Squared goodness of fit between the data and a Gaussian distribution, normalized to 0-100."""
+    # Z-score normalization using the diagonal of sigma
+    std_dev = np.sqrt(np.diag(sigma))  # Extract the standard deviations from the covariance matrix
+    normalized_embeddings = (embeddings - mu) / std_dev
     
     # Create histogram of the normalized data
     hist, bin_edges = np.histogram(normalized_embeddings, bins=bins, density=True)
