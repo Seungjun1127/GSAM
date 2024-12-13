@@ -21,6 +21,23 @@ def test_gsam_pipeline():
     dataset = load_word_dataset()
     print("Loaded dataset for testing.")
 
+    # Print the type of the first sample to understand its structure
+    print(f"Type of first sample: {type(dataset[0])}")
+    print(f"First sample: {dataset[0]}")
+
+    # Extract the first 10 samples
+    samples = dataset[:10]
+
+    # Check if each sample is a dictionary and count the total number of data points in the 'sentence' field
+    total_data_points = 0
+    for sample in samples:
+        if isinstance(sample, dict) and 'sentence' in sample:
+            total_data_points += len(sample['sentence'])
+        else:
+            print("Sample is not a dictionary or does not contain 'sentence':", sample)
+
+    print(f"Total data points in the 'sentence' field for the first 10 samples: {total_data_points}")
+
     # Load model
     model_loader = LargeModelLoader()
     model_name = 'pythia-7b'  # Changed model name to Llama-2-7
@@ -49,14 +66,6 @@ def test_gsam_pipeline():
     # Record GSAM results to a text file
     with open("gsam_results.txt", "a") as f:  # Open file in 'a' mode (append mode)
         f.write(f"Model: {model_name}, Metric: {metric}, GSAM Score: {gsam_score}\n")  # Record results
-
-    # Extract the first 10 samples
-    samples = dataset[:10]
-
-    # Count the total number of data points in the 'sentence' field
-    total_data_points = sum(len(sample['sentence']) for sample in samples)
-
-    print(f"Total data points in the 'sentence' field for the first 10 samples: {total_data_points}")
 
 if __name__ == "__main__":
     test_gsam_pipeline()
