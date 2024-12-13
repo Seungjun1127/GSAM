@@ -104,28 +104,28 @@ def compute_kl_divergence_from_gaussian(embeddings: np.ndarray, mu: np.ndarray, 
     N = embeddings.shape[0]
     log_probs = [log_multivariate_gaussian_pdf(x, mu, sigma) for x in embeddings]
     
-    # 최대 로그 확률 밀도 계산
+    # Calculate the maximum log probability density
     max_log_prob = np.max(log_probs)
     
-    # 평균 로그 확률 밀도
+    # Calculate the average log probability density
     avg_logp = np.mean(log_probs)
     
-    # 정규화된 KL 점수 계산
+    # Calculate the normalized KL score
     kl = -np.log(N) - avg_logp
-    normalized_score = (avg_logp - max_log_prob) / max_log_prob * 100  # %로 변환
+    normalized_score = 100 - (avg_logp - max_log_prob) / max_log_prob * 100  # Convert to percentage
     return normalized_score
 
 
 def compute_neg_log_likelihood(embeddings: np.ndarray, mu: np.ndarray, sigma: np.ndarray) -> float:
     log_probs = [log_multivariate_gaussian_pdf(x, mu, sigma) for x in embeddings]
     
-    # 최대 로그 확률 밀도 계산
+    # Calculate the maximum log probability density
     max_log_prob = np.max(log_probs)
     
-    # 평균 로그 확률 밀도
+    # Calculate the average log probability density
     avg_logp = np.mean(log_probs)
     
-    # 정규화된 NLL 점수 계산
+    # Calculate the normalized NLL score
     nll = -avg_logp
-    normalized_score = (avg_logp - max_log_prob) / max_log_prob * 100  # %로 변환
+    normalized_score = 100 - (avg_logp - max_log_prob) / max_log_prob * 100  # Convert to percentage
     return normalized_score

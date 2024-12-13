@@ -17,38 +17,46 @@ def test_gsam_pipeline():
 
     torch.cuda.empty_cache()
 
-    # 데이터 로드
+    # Load dataset
     dataset = load_word_dataset()
     print("Loaded dataset for testing.")
 
-    # 모델 로드
+    # Load model
     model_loader = LargeModelLoader()
-    model_name = 'pythia-7b'  # Llama-2-7 모델 이름으로 변경
+    model_name = 'pythia-7b'  # Changed model name to Llama-2-7
 
-    # CUDA 사용 가능 여부 확인
+    # Check if CUDA is available
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model, tokenizer = model_loader.load_model(model_name, device=device)  # device를 설정
+    model, tokenizer = model_loader.load_model(model_name, device=device)  # Set device
 
-    # 패딩 토큰 설정
-    tokenizer.pad_token = tokenizer.eos_token  # EOS 토큰을 패딩 토큰으로 설정
+    # Set padding token
+    tokenizer.pad_token = tokenizer.eos_token  # Set EOS token as padding token
 
-    # 데이터셋에서 여러 샘플을 가져와서 토큰화
-    samples = [dataset[i]['sentence'] for i in range(10)]  # 전체 데이터셋에서 'sentence' 필드 추출
+    # Tokenize multiple samples from the dataset
+    samples = [dataset[i]['sentence'] for i in range(10)]  # Extract 'sentence' field from the entire dataset
     inputs = tokenizer(samples, return_tensors='pt', padding=True, truncation=True)
 
-    # 모델의 activations 추출
+    # Extract model's activations
     with torch.no_grad():
         activations = model_loader.extract_activation(model, inputs['input_ids'].to(device), inputs['attention_mask'].to(device))
 
-    # GSAM 계산
-    #metric = 'kl_divergence'  # metric 변수를 정의
+    # Calculate GSAM
+    #metric = 'kl_divergence'  # Define metric variable
     metric = 'neg_log_likelihood'
-    gsam_score = compute_gsam(activations.cpu().numpy(), metric=metric)  # CPU로 이동하여 NumPy 배열로 변환
+    gsam_score = compute_gsam(activations.cpu().numpy(), metric=metric)  # Move to CPU and convert to NumPy array
     print(f"GSAM Score: {gsam_score}")
 
-    # GSAM 결과를 텍스트 파일에 기록
-    with open("gsam_results.txt", "a") as f:  # 'a' 모드로 파일 열기 (추가 모드)
-        f.write(f"Model: {model_name}, Metric: {metric}, GSAM Score: {gsam_score}\n")  # 결과 기록
+    # Record GSAM results to a text file
+    with open("gsam_results.txt", "a") as f:  # Open file in 'a' mode (append mode)
+        f.write(f"Model: {model_name}, Metric: {metric}, GSAM Score: {gsam_score}\n")  # Record results
+
+    # Extract the first 10 samples
+    samples = dataset[:10]
+
+    # Count the total number of data points in the 'sentence' field
+    total_data_points = sum(len(sample['sentence']) for sample in samples)
+
+    print(f"Total data points in the 'sentence' field for the first 10 samples: {total_data_points}")
 
 if __name__ == "__main__":
     test_gsam_pipeline()
