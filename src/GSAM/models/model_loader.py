@@ -15,17 +15,7 @@ class LargeModelLoader:
         }
         
     def load_model(self, model_name: str, device: str = 'cpu'):
-        """
-        Load a pretrained large language model from HuggingFace.
-        
-        Args:
-            model_name: Name of model to load (one of available_models keys)
-            device: Device to load model on ('cuda' or 'cpu')
-            
-        Returns:
-            model: Loaded model
-            tokenizer: Model's tokenizer
-        """
+
         if model_name not in self.available_models:
             raise ValueError(f"Unsupported model. Available models: {list(self.available_models.keys())}")
             
@@ -48,22 +38,10 @@ class LargeModelLoader:
         return model, tokenizer
         
     def get_available_models(self):
-        """Returns list of available models."""
         return list(self.available_models.keys())
     
     def extract_activation(self, model, input_ids, attention_mask=None):
-        """
-        Extract and combine hidden states from the last encoder layer and first decoder layer
-        by mean pooling over tokens and residual sum each other.
 
-        Args:
-            model: HuggingFace model
-            input_ids: Input token IDs (batch_size, seq_len)
-            attention_mask: Attention mask (batch_size, seq_len)
-
-        Returns:
-            torch.Tensor: Combined hidden states (batch_size, hidden_dim)
-        """
         # Get hidden states from model output
         outputs = model(input_ids, 
                         attention_mask=attention_mask,

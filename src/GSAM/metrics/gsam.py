@@ -5,22 +5,7 @@ from scipy.linalg import cholesky, LinAlgError
 
 def compute_gsam(embeddings: np.ndarray,
                  metric: str = 'kl_divergence') -> float:
-    """
-    Compute the Gaussian Semantic Alignment Metric (GSAM) for a given set of embeddings
-    without any dimensionality reduction. Directly uses the provided high-dimensional embeddings.
 
-    Parameters
-    ----------
-    embeddings : np.ndarray
-        A 2D array of shape (N, D) representing N samples of D-dimensional embeddings.
-    metric : str
-        Metric for Gaussian alignment: 'kl_divergence' or 'neg_log_likelihood'.
-
-    Returns
-    -------
-    float
-        The GSAM score. Higher indicates closer alignment to a Gaussian distribution.
-    """
     # Basic validations
     if embeddings.ndim != 2:
         raise ValueError("embeddings must be a 2D array (N, D).")
@@ -47,21 +32,7 @@ def compute_gsam(embeddings: np.ndarray,
 
 def batch_compute_gsam(batch_embeddings: Union[list, np.ndarray],
                        metric: str = 'kl_divergence') -> float:
-    """
-    Compute GSAM for multiple batches of embeddings and return the average score.
 
-    Parameters
-    ----------
-    batch_embeddings : list or np.ndarray
-        If np.ndarray, considered as a single batch. If list of np.ndarray, multiple batches.
-    metric : str
-        GSAM metric: 'kl_divergence' or 'neg_log_likelihood'
-
-    Returns
-    -------
-    float
-        Average GSAM score across batches.
-    """
     if isinstance(batch_embeddings, np.ndarray):
         batch_embeddings = [batch_embeddings]
 
@@ -73,21 +44,7 @@ def batch_compute_gsam(batch_embeddings: Union[list, np.ndarray],
 
 
 def compare_models(model_embeddings: dict, metric: str = 'kl_divergence') -> dict:
-    """
-    Compare multiple models' embeddings using GSAM.
 
-    Parameters
-    ----------
-    model_embeddings : dict
-        Dictionary where keys are model names and values are embeddings (np.ndarray).
-    metric : str
-        'kl_divergence' or 'neg_log_likelihood'
-
-    Returns
-    -------
-    dict
-        {model_name: GSAM_score}
-    """
     results = {}
     for model_name, emb in model_embeddings.items():
         score = compute_gsam(emb, metric=metric)
@@ -96,10 +53,7 @@ def compare_models(model_embeddings: dict, metric: str = 'kl_divergence') -> dic
 
 
 def normalize_embeddings(embeddings: np.ndarray) -> np.ndarray:
-    """
-    Normalize embeddings to have zero mean and unit variance per dimension.
-    Handle zero variance dimensions by leaving them as is (std=1 if std=0).
-    """
+
     mean = np.mean(embeddings, axis=0)
     std = np.std(embeddings, axis=0)
     std[std == 0] = 1.0
@@ -107,33 +61,14 @@ def normalize_embeddings(embeddings: np.ndarray) -> np.ndarray:
 
 
 def estimate_gaussian_params(embeddings: np.ndarray):
-    """
-    Estimate mean and covariance matrix of the embeddings.
-    """
+
     mu = np.mean(embeddings, axis=0)
     sigma = np.cov(embeddings, rowvar=False)
     return mu, sigma
 
 
 def regularize_covariance(sigma: np.ndarray, epsilon: float = 1e-6, max_retries: int = 10) -> np.ndarray:
-    """
-    Regularize the covariance matrix to ensure it is positive-definite and invertible.
-    We try Cholesky decomposition. If it fails, we add epsilon*I and retry.
 
-    Parameters
-    ----------
-    sigma : np.ndarray
-        Covariance matrix.
-    epsilon : float
-        Small value to add to the diagonal if needed.
-    max_retries : int
-        Maximum number of times to try increasing epsilon.
-
-    Returns
-    -------
-    np.ndarray
-        A regularized covariance matrix that is positive-definite.
-    """
     attempt = 0
     while attempt < max_retries:
         try:
@@ -150,11 +85,7 @@ def regularize_covariance(sigma: np.ndarray, epsilon: float = 1e-6, max_retries:
 
 
 def log_multivariate_gaussian_pdf(x: np.ndarray, mu: np.ndarray, sigma: np.ndarray) -> float:
-    """
-    Compute log probability density of x under a multivariate Gaussian N(mu, sigma).
 
-    log p(x) = -0.5 * (D * log(2π) + log|Σ| + (x - μ)^T Σ^-1 (x - μ))
-    """
     D = mu.shape[0]
     sign, logdet = np.linalg.slogdet(sigma)
     # We assume sigma is PD, so sign should be > 0.
@@ -170,27 +101,31 @@ def log_multivariate_gaussian_pdf(x: np.ndarray, mu: np.ndarray, sigma: np.ndarr
 
 
 def compute_kl_divergence_from_gaussian(embeddings: np.ndarray, mu: np.ndarray, sigma: np.ndarray) -> float:
-    """
-    Compute KL divergence D(P_data || P_gaussian).
-    P_data is discrete uniform over N samples.
-    
-    KL(P_data||P_gaussian) = (1/N)*∑ log(P_data(x_i)/P_gaussian(x_i))
-                           = (1/N)*∑ [log(1/N) - log p_gaussian(x_i)]
-                           = -log(N) - (1/N)*∑ log p_gaussian(x_i)
-    """
     N = embeddings.shape[0]
     log_probs = [log_multivariate_gaussian_pdf(x, mu, sigma) for x in embeddings]
+    
+    # 최대 로그 확률 밀도 계산
+    max_log_prob = np.max(log_probs)
+    
+    # 평균 로그 확률 밀도
     avg_logp = np.mean(log_probs)
+    
+    # 정규화된 KL 점수 계산
     kl = -np.log(N) - avg_logp
-    return kl
+    normalized_score = (avg_logp - max_log_prob) / max_log_prob * 100  # %로 변환
+    return normalized_score
 
 
 def compute_neg_log_likelihood(embeddings: np.ndarray, mu: np.ndarray, sigma: np.ndarray) -> float:
-    """
-    Compute negative log-likelihood under the fitted Gaussian.
-    NLL = - (1/N)*∑ log p_gaussian(x_i)
-    """
     log_probs = [log_multivariate_gaussian_pdf(x, mu, sigma) for x in embeddings]
+    
+    # 최대 로그 확률 밀도 계산
+    max_log_prob = np.max(log_probs)
+    
+    # 평균 로그 확률 밀도
     avg_logp = np.mean(log_probs)
+    
+    # 정규화된 NLL 점수 계산
     nll = -avg_logp
-    return nll
+    normalized_score = (avg_logp - max_log_prob) / max_log_prob * 100  # %로 변환
+    return normalized_score

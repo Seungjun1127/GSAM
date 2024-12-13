@@ -3,8 +3,7 @@
 import sys
 import os
 
-# src 폴더를 경로에 추가
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
 from src.GSAM.data.loaders import load_short_text_dataset, load_word_dataset, load_large_english_dataset
 
