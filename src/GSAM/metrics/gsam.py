@@ -19,11 +19,14 @@ def compute_gsam(embeddings: np.ndarray,
     sigma = regularize_covariance(sigma)
 
     if metric == 'kl_divergence':
-        kl_val = compute_kl_divergence_from_gaussian(emb_normalized, mu, sigma)
+        kl_val = compute_kl_divergence(emb_normalized, mu, sigma)
         gsam_score = -kl_val
     elif metric == 'neg_log_likelihood':
         nll_val = compute_neg_log_likelihood(emb_normalized, mu, sigma)
         gsam_score = -nll_val
+    elif metric == 'chi_squared':
+        chi_squared_val = chi_squared_goodness_of_fit(emb_normalized, mu, sigma)
+        gsam_score = chi_squared_val
     else:
         raise ValueError(f"Unsupported metric: {metric}")
 
@@ -100,22 +103,6 @@ def log_multivariate_gaussian_pdf(x: np.ndarray, mu: np.ndarray, sigma: np.ndarr
     return -0.5 * (D * np.log(2*np.pi) + logdet + diff @ inv_sigma @ diff)
 
 
-def compute_kl_divergence_from_gaussian(embeddings: np.ndarray, mu: np.ndarray, sigma: np.ndarray) -> float:
-    N = embeddings.shape[0]
-    log_probs = [log_multivariate_gaussian_pdf(x, mu, sigma) for x in embeddings]
-    
-    # Calculate the maximum log probability density
-    max_log_prob = np.max(log_probs)
-    
-    # Calculate the average log probability density
-    avg_logp = np.mean(log_probs)
-    
-    # Calculate the normalized KL score
-    kl = -np.log(N) - avg_logp
-    normalized_score = 100 - (avg_logp - max_log_prob) / max_log_prob * 100  # Convert to percentage
-    return normalized_score
-
-
 def compute_neg_log_likelihood(embeddings: np.ndarray, mu: np.ndarray, sigma: np.ndarray) -> float:
     log_probs = [log_multivariate_gaussian_pdf(x, mu, sigma) for x in embeddings]
     
@@ -128,4 +115,33 @@ def compute_neg_log_likelihood(embeddings: np.ndarray, mu: np.ndarray, sigma: np
     # Calculate the normalized NLL score
     nll = -avg_logp
     normalized_score = 100 - (avg_logp - max_log_prob) / max_log_prob * 100  # Convert to percentage
+    return normalized_score
+
+
+def compute_kl_divergence(embeddings: np.ndarray, mu: np.ndarray, sigma: np.ndarray) -> float:
+    """Calculate the Kullback-Leibler divergence between the data distribution and a Gaussian distribution."""
+    N = embeddings.shape[0]
+    log_probs = [log_multivariate_gaussian_pdf(x, mu, sigma) for x in embeddings]
+    avg_logp = np.mean(log_probs)
+    kl_divergence = -avg_logp  # KL divergence is the negative average log probability
+    return kl_divergence
+
+
+def chi_squared_goodness_of_fit(embeddings: np.ndarray, mu: np.ndarray, sigma: np.ndarray, bins: int = 30, max_chi_squared: float = 100.0) -> float:
+    # Z-score normalization
+    normalized_embeddings = (embeddings - mu) / sigma
+    
+    # Create histogram of the normalized data
+    hist, bin_edges = np.histogram(normalized_embeddings, bins=bins, density=True)
+    
+    # Calculate the expected Gaussian distribution for normalized data
+    bin_centers = 0.5 * (bin_edges[1:] + bin_edges[:-1])
+    expected = (1 / np.sqrt(2 * np.pi)) * np.exp(-0.5 * (bin_centers ** 2))
+    
+    # Calculate Chi-Squared statistic
+    chi_squared = np.sum((hist - expected) ** 2 / expected)
+    
+    # Normalize the Chi-Squared statistic to a range of 0 to 100
+    normalized_score = max(0, (1 - chi_squared / max_chi_squared) * 100)
+    
     return normalized_score
