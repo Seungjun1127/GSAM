@@ -39,6 +39,7 @@ def test_gsam_pipeline():
         activations = model_loader.extract_activation(model, inputs['input_ids'].to(device), inputs['attention_mask'].to(device))
 
     # GSAM 계산
+    metric = 'kl_divergence'  # metric 변수를 정의
     gsam_score = compute_gsam(activations.cpu().numpy(), metric=metric)  # CPU로 이동하여 NumPy 배열로 변환
     print(f"GSAM Score: {gsam_score}")
 
