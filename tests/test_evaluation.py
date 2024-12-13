@@ -31,7 +31,7 @@ def test_gsam_pipeline():
     tokenizer.pad_token = tokenizer.eos_token  # EOS 토큰을 패딩 토큰으로 설정
 
     # 데이터셋에서 여러 샘플을 가져와서 토큰화
-    samples = [dataset[i]['sentence'] for i in range(10)]  # 첫 10개 샘플에서 'sentence' 필드 추출
+    samples = [dataset[i]['sentence'] for i in range(len(dataset))]  # 전체 데이터셋에서 'sentence' 필드 추출
     inputs = tokenizer(samples, return_tensors='pt', padding=True, truncation=True)
 
     # 모델의 activations 추출
@@ -39,8 +39,12 @@ def test_gsam_pipeline():
         activations = model_loader.extract_activation(model, inputs['input_ids'].to(device), inputs['attention_mask'].to(device))
 
     # GSAM 계산
-    gsam_score = compute_gsam(activations.cpu().numpy())  # CPU로 이동하여 NumPy 배열로 변환
+    gsam_score = compute_gsam(activations.cpu().numpy(), metric=metric)  # CPU로 이동하여 NumPy 배열로 변환
     print(f"GSAM Score: {gsam_score}")
+
+    # GSAM 결과를 텍스트 파일에 기록
+    with open("gsam_results.txt", "a") as f:  # 'a' 모드로 파일 열기 (추가 모드)
+        f.write(f"Model: {model_name}, Metric: {metric}, GSAM Score: {gsam_score}\n")  # 결과 기록
 
 if __name__ == "__main__":
     test_gsam_pipeline()
