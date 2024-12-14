@@ -21,12 +21,6 @@ def compute_gsam(embeddings: np.ndarray,
     if metric == 'kl_divergence':
         kl_val = compute_kl_divergence(emb_normalized, mu, sigma)
         gsam_score = -kl_val
-    elif metric == 'neg_log_likelihood':
-        nll_val = compute_neg_log_likelihood(emb_normalized, mu, sigma)
-        gsam_score = -nll_val
-    elif metric == 'chi_squared':
-        chi_squared_val = chi_squared_goodness_of_fit(emb_normalized, mu, sigma)
-        gsam_score = chi_squared_val
     else:
         raise ValueError(f"Unsupported metric: {metric}")
 
@@ -127,23 +121,3 @@ def compute_kl_divergence(embeddings: np.ndarray, mu: np.ndarray, sigma: np.ndar
     return kl_divergence
 
 
-def chi_squared_goodness_of_fit(embeddings: np.ndarray, mu: np.ndarray, sigma: np.ndarray, bins: int = 30, max_chi_squared: float = 100.0) -> float:
-    """Calculate the Chi-Squared goodness of fit between the data and a Gaussian distribution, normalized to 0-100."""
-    # Z-score normalization using the diagonal of sigma
-    std_dev = np.sqrt(np.diag(sigma))  # Extract the standard deviations from the covariance matrix
-    normalized_embeddings = (embeddings - mu) / std_dev
-    
-    # Create histogram of the normalized data
-    hist, bin_edges = np.histogram(normalized_embeddings, bins=bins, density=True)
-    
-    # Calculate the expected Gaussian distribution for normalized data
-    bin_centers = 0.5 * (bin_edges[1:] + bin_edges[:-1])
-    expected = (1 / np.sqrt(2 * np.pi)) * np.exp(-0.5 * (bin_centers ** 2))
-    
-    # Calculate Chi-Squared statistic
-    chi_squared = np.sum((hist - expected) ** 2 / expected)
-    
-    # Normalize the Chi-Squared statistic to a range of 0 to 100
-    normalized_score = max(0, (1 - chi_squared / max_chi_squared) * 100)
-    
-    return normalized_score

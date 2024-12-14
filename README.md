@@ -15,12 +15,12 @@
 
 ---
 
-## Installation
+## Installation, How to run
 
 1. **Clone this repository:**
     ```bash
     git clone https://github.com/Seungjun1127/GSAM.git
-    cd gsam
+    cd GSAM
     ```
 
 2. **Set up a virtual environment (optional but recommended):**
@@ -40,68 +40,24 @@
    - Scikit-learn (for PCA or other dimensionality reduction methods)
    - NumPy, SciPy, and other statistical libraries
 
+4. **Setting:**
+   - set model
+    ```bash
+    model_name = 'falcon-7b'
+    ```
+   - set number of samples
+   ```bash
+   samples = [dataset[i]['sentence'] for i in range(300)]
+   ```
+
+5. **Run evaluation:**
+    ```bash
+    python tests/test_evaluation.py
+    ```
+
+
 ---
 
-## How It Works
-
-**Step-by-step:**
-
-1. **Data Collection:**  
-   Prepare a corpus of sentences. These sentences should be diverse and not necessarily task-specific. The number of sentences is up to you, but a few thousand sentences are recommended for stable statistical estimates.
-
-2. **Model Inference:**  
-   Run your chosen LLM on the input sentences and extract hidden states from a specified layer. This might involve:
-   ```python
-   from transformers import AutoModelForCausalLM, AutoTokenizer
-   
-   model_name = "your-chosen-llm"
-   tokenizer = AutoTokenizer.from_pretrained(model_name)
-   model = AutoModelForCausalLM.from_pretrained(model_name)
-   
-   # Example: extract hidden states for a batch of sentences
-   sentences = ["This is a sample sentence.", "Here is another one.", ...]
-   inputs = tokenizer(sentences, return_tensors='pt', padding=True, truncation=True)
-   outputs = model(**inputs, output_hidden_states=True)
-   hidden_states = outputs.hidden_states  # A tuple of hidden states per layer
-   # Select a particular layer, e.g., the last layer
-   selected_layer_states = hidden_states[-1]  # shape: [batch_size, seq_length, hidden_dim]
-   ```
-
-3. **Dimensionality Reduction:**  
-   Apply a dimension reduction method (e.g., PCA) to the collected token-level vectors. This step transforms the high-dimensional hidden states into a manageable, fixed dimension (e.g., 50D).
-   ```python
-   from sklearn.decomposition import PCA
-   import torch
-
-   # Flatten the token embeddings
-   token_embeddings = selected_layer_states.reshape(-1, selected_layer_states.shape[-1])
-   
-   pca = PCA(n_components=50)
-   reduced_embeddings = pca.fit_transform(token_embeddings.detach().numpy())
-   ```
-
-4. **Gaussian Fitting and Metric Calculation:**  
-   Fit a multivariate Gaussian distribution to the reduced embeddings and compute a divergence measure (e.g., KL-divergence) between the empirical distribution and the fitted Gaussian.
-   ```python
-   import numpy as np
-   from scipy.stats import multivariate_normal
-
-   mean = np.mean(reduced_embeddings, axis=0)
-   cov = np.cov(reduced_embeddings, rowvar=False)
-   
-   # Calculate log-likelihoods under the fitted Gaussian
-   rv = multivariate_normal(mean=mean, cov=cov)
-   log_likelihoods = rv.logpdf(reduced_embeddings)
-   
-   # GSAM can be defined as, for instance:
-   # GSAM = average log-likelihood (the higher, the closer to Gaussian)
-   gsam_score = np.mean(log_likelihoods)
-   print("GSAM Score:", gsam_score)
-   ```
-
-   A higher GSAM score (or lower divergence) indicates that the internal representations are more Gaussian-like and isotropic.
-
----
 
 ## Interpreting the Results
 
@@ -109,20 +65,6 @@
 - A **low GSAM score** suggests more anisotropy or multimodality, meaning the model’s internal semantics might be skewed or clustered, hinting at potential limitations in semantic alignment.
 
 Use these insights to compare different models (e.g., base vs. instruction-tuned, different architectures, or models before and after fine-tuning).
-
----
-
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request if you have suggestions for improvements, bug fixes, or new features.
-
----
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
----
 
 ## Contact
 

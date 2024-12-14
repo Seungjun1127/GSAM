@@ -28,7 +28,7 @@ def test_gsam_pipeline():
 
     # Load model
     model_loader = LargeModelLoader()
-    model_name = 'gpt-neo-125M'  # Changed model name to Llama-2-7
+    model_name = 'gpt-neo-2.7B'  # Changed model
 
     # Check if CUDA is available
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -38,7 +38,8 @@ def test_gsam_pipeline():
     tokenizer.pad_token = tokenizer.eos_token  # Set EOS token as padding token
 
     # Tokenize multiple samples from the dataset
-    samples = [dataset[i]['sentence'] for i in range(10)]  # Extract 'sentence' field from the entire dataset
+    samples = [dataset[i]['sentence'] for i in range(300)]  # Extract 'sentence' field from the entire dataset
+    print(f'datasets: {dataset[0]["sentence"]}')
     inputs = tokenizer(samples, return_tensors='pt', padding=True, truncation=True)
 
     # Extract model's activations
@@ -46,8 +47,7 @@ def test_gsam_pipeline():
         activations = model_loader.extract_activation(model, inputs['input_ids'].to(device), inputs['attention_mask'].to(device))
 
     # Calculate GSAM
-    #metric = 'kl_divergence'  # Define metric variable
-    metric = 'chi_squared'
+    metric = 'kl_divergence'  # Define metric variable
     gsam_score = compute_gsam(activations.cpu().numpy(), metric=metric)  # Move to CPU and convert to NumPy array
     print(f"GSAM Score: {gsam_score}")
 
