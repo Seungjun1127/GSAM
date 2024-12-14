@@ -5,8 +5,5 @@ typing
 torch
 accelerate
 bitsandbytes
-<<<<<<< HEAD
 einops
-=======
 transformers
->>>>>>> 77266ee13ce7c170b7d4a2f63d147e48ebcf612b
