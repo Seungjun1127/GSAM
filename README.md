@@ -1,4 +1,4 @@
-# Gaussian Semantic Alignment Metric (GSAM)
+# Gaussianity Metric
 
 **GSAM** is a novel evaluation metric designed to assess the internal semantic representation quality of Large Language Models (LLMs). Instead of focusing solely on the final output (e.g., answer accuracy, fluency, or generation quality), GSAM aims to measure how uniformly and coherently the internal token-level hidden states are organized in the semantic space. It does so by evaluating the closeness of the model’s hidden state distribution to a multivariate Gaussian distribution after applying a standardized dimensionality reduction procedure.
 
