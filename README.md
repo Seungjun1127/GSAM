@@ -1,17 +1,17 @@
 # Gaussianity Metric
 
-**GSAM** is a novel evaluation metric designed to assess the internal semantic representation quality of Large Language Models (LLMs). Instead of focusing solely on the final output (e.g., answer accuracy, fluency, or generation quality), GSAM aims to measure how uniformly and coherently the internal token-level hidden states are organized in the semantic space. It does so by evaluating the closeness of the model’s hidden state distribution to a multivariate Gaussian distribution after applying a standardized dimensionality reduction procedure.
+**Gaussianity** is a novel evaluation metric designed to assess the internal semantic representation quality of Large Language Models (LLMs). Instead of focusing solely on the final output (e.g., answer accuracy, fluency, or generation quality), Gaussianity aims to measure how uniformly and coherently the internal token-level hidden states are organized in the semantic space. It does so by evaluating the closeness of the model’s hidden state distribution to a multivariate Gaussian distribution after applying a standardized dimensionality reduction procedure.
 
 ### Key Features
 
 - **Task-Agnostic Evaluation:**  
-  GSAM does not rely on downstream tasks or labeled datasets. It can be applied to any set of text inputs to assess the “semantic alignment” quality of a model’s internal representations.
+  Gaussianity does not rely on downstream tasks or labeled datasets. It can be applied to any set of text inputs to assess the “semantic alignment” quality of a model’s internal representations.
 
 - **Distribution-Based Assessment:**  
-  Instead of treating hidden states as arbitrary vectors, GSAM quantifies their statistical properties. By fitting a multivariate Gaussian to the reduced representations, GSAM provides a measure of isotropy and uniformity in the semantic embedding space.
+  Instead of treating hidden states as arbitrary vectors, Gaussianity quantifies their statistical properties. By fitting a multivariate Gaussian to the reduced representations, Gaussianity provides a measure of isotropy and uniformity in the semantic embedding space.
 
 - **Model-Agnostic and Scalable:**  
-  GSAM can be applied to various LLMs (including open-source models like LLaMA-7B, MPT, and others) without specialized customization. With minimal setup, it can help researchers and practitioners compare different models’ internal representation quality on a common scale.
+  Gaussianity can be applied to various LLMs (including open-source models like LLaMA-7B, MPT, and others) without specialized customization. With minimal setup, it can help researchers and practitioners compare different models’ internal representation quality on a common scale.
 
 ---
 
@@ -19,8 +19,8 @@
 
 1. **Clone this repository:**
     ```bash
-    git clone https://github.com/Seungjun1127/GSAM.git
-    cd GSAM
+    git clone https://github.com/Seungjun1127/Gaussianity.git
+    cd Gaussianity
     ```
 
 2. **Set up a virtual environment (optional but recommended):**
@@ -61,8 +61,8 @@
 
 ## Interpreting the Results
 
-- A **high GSAM score** suggests that the model’s semantic space is well-organized, isotropic, and evenly distributed, potentially indicating good generalization capacity.
-- A **low GSAM score** suggests more anisotropy or multimodality, meaning the model’s internal semantics might be skewed or clustered, hinting at potential limitations in semantic alignment.
+- A **high Gaussianity score** suggests that the model’s semantic space is well-organized, isotropic, and evenly distributed, potentially indicating good generalization capacity.
+- A **low Gaussianity score** suggests more anisotropy or multimodality, meaning the model’s internal semantics might be skewed or clustered, hinting at potential limitations in semantic alignment.
 
 Use these insights to compare different models (e.g., base vs. instruction-tuned, different architectures, or models before and after fine-tuning).
 
